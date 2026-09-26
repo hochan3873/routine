@@ -15,7 +15,7 @@
 <meta property="og:image" content="https://hochan3873.github.io/routine/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="https://hochan3873.github.io/routine/">
+<meta property="og:url" content="https://hochan3873.github.io/routine/?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -534,7 +534,7 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
       <div class="sharebox">
         <img id="qrImg" src="qr.png" alt="이 페이지 주소 QR 코드" width="132" height="132">
         <div class="shareside">
-          <code class="urltxt" id="urlTxt">hochan3873.github.io/routine/</code>
+          <code class="urltxt" id="urlTxt">hochan3873.github.io/routine/?v=2</code>
           <div class="row" style="gap:7px; margin-top:9px">
             <button class="btn sm primary" id="shShare">공유하기</button>
             <button class="btn sm" id="shCopy">링크 복사</button>
@@ -1081,7 +1081,7 @@ document.getElementById('calNext').onclick=()=>{ calMonth.setMonth(calMonth.getM
 document.getElementById('markDrink').onclick=()=>{ ST.drink[today()]=true; save(); toast('기록했습니다 — 내일은 무게 20% 낮추세요'); };
 
 /* ═══════════════ 링크 공유 + 앱 설치 ═══════════════ */
-const SHARE_URL = 'https://hochan3873.github.io/routine/';
+const SHARE_URL = 'https://hochan3873.github.io/routine/?v=2';
 
 function openSheet(title, html){
   document.getElementById('sheetTitle').textContent = title;
@@ -1095,19 +1095,75 @@ function openSheet(title, html){
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') sh.hidden = true; });
 })();
 
-async function doShare(){
-  const url = SHARE_URL;
-  if(typeof navigator.share === 'function'){
-    try{
-      await navigator.share({title:'술쟁이호찬의 건강헬린이 루틴북', text:'술 마셔도 안 끊기는 주 3~4회 루틴', url});
-      return;
-    }catch(e){ if(e && e.name==='AbortError') return; }
-  }
-  try{ await navigator.clipboard.writeText(url); toast('링크를 복사했습니다 — 붙여넣으세요'); }
-  catch(e){ openSheet('링크 주소', `<code class="urltxt">${url}</code><p class="note" style="margin-top:8px">위 주소를 길게 눌러 복사하세요.</p>`); }
+function uaStr(){ return navigator.userAgent || ''; }
+function isInApp(){ return /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(uaStr()); }
+function isIOS(){ return /iPad|iPhone|iPod/.test(uaStr()); }
+function isAndroid(){ return /Android/.test(uaStr()); }
+
+/* 클립보드 — 최신 API가 막히면 옛날 방식까지 시도 */
+async function copyText(t){
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(t);
+      return true;
+    }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = t;
+    ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, t.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  }catch(e){ return false; }
 }
 
-/* 앱 설치 */
+/* ── 공유: 무슨 일이 있어도 창은 뜬다 ── */
+function doShare(){
+  const url = SHARE_URL;
+  const canShare = typeof navigator.share === 'function';
+
+  openSheet('링크 공유', ''
+    + '<p style="margin:0 0 10px">아래 주소를 보내면 <b>받는 사람은 로그인 없이 바로 열립니다.</b></p>'
+    + '<code class="urltxt" id="shsUrl" style="display:block; word-break:break-all; user-select:all; -webkit-user-select:all; padding:11px; border-radius:9px">' + url + '</code>'
+    + '<div class="row" style="gap:7px; margin-top:11px; flex-wrap:wrap">'
+    +   (canShare ? '<button class="btn sm primary" id="shsNative">다른 앱으로 보내기</button>' : '')
+    +   '<button class="btn sm' + (canShare ? '' : ' primary') + '" id="shsCopy">링크 복사</button>'
+    + '</div>'
+    + '<p class="note" id="shsMsg" style="margin:10px 0 0">복사가 안 되면 위 주소를 <b>길게 눌러</b> 전체 선택 후 복사하세요.</p>'
+    + '<div style="text-align:center; margin-top:13px">'
+    +   '<img src="qr.png" alt="주소 QR 코드" width="128" height="128" style="border-radius:10px; background:#fff; padding:6px">'
+    +   '<p class="note" style="margin:6px 0 0">다른 폰 카메라로 찍어도 열립니다</p>'
+    + '</div>');
+
+  const msg = document.getElementById('shsMsg');
+  const nat = document.getElementById('shsNative');
+  if(nat) nat.onclick = async ()=>{
+    try{
+      await navigator.share({title:'술쟁이호찬의 건강헬린이 루틴북', text:'술 마셔도 안 끊기는 주 3~4회 루틴', url});
+    }catch(e){
+      if(e && e.name === 'AbortError') return;
+      msg.innerHTML = '이 브라우저는 공유창을 못 엽니다. <b>링크 복사</b>를 쓰세요.';
+    }
+  };
+  document.getElementById('shsCopy').onclick = async ()=>{
+    const ok = await copyText(url);
+    msg.innerHTML = ok ? '<b>복사했습니다</b> — 카톡에 붙여넣으세요.'
+                       : '복사가 막혀 있습니다. 위 주소를 <b>길게 눌러</b> 직접 복사하세요.';
+    if(!ok){
+      try{
+        const el = document.getElementById('shsUrl');
+        const r = document.createRange(); r.selectNodeContents(el);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      }catch(e2){}
+    }
+  };
+}
+
+/* ── 앱 설치 ── */
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt = e; });
 window.addEventListener('appinstalled', ()=>{ deferredPrompt = null; toast('설치했습니다'); });
@@ -1115,40 +1171,79 @@ window.addEventListener('appinstalled', ()=>{ deferredPrompt = null; toast('설�
 function isStandalone(){
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
+
 async function doInstall(){
+  /* 1) 크롬이 설치를 지원하면 바로 띄운다 */
   if(deferredPrompt){
-    deferredPrompt.prompt();
-    try{ await deferredPrompt.userChoice; }catch(e){}
-    deferredPrompt = null;
+    try{
+      deferredPrompt.prompt();
+      const r = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if(r && r.outcome === 'accepted') return;
+      toast('설치를 취소했습니다');
+      return;
+    }catch(e){ deferredPrompt = null; }
+  }
+
+  /* 2) 카톡·인스타 같은 인앱 브라우저 — 여기선 설치가 막혀 있다 */
+  if(isInApp()){
+    openSheet('크롬(사파리)으로 열어주세요', ''
+      + '<p style="margin:0 0 10px">지금은 <b>카카오톡 안의 브라우저</b>로 보고 있어서 앱 설치가 막혀 있습니다.</p>'
+      + '<ol style="margin:0; padding-left:19px; line-height:1.85">'
+      +   '<li>화면 <b>오른쪽 아래 ⋮ (또는 ⋯)</b> 버튼</li>'
+      +   '<li><b>다른 브라우저로 열기</b> ' + (isIOS() ? '→ <b>Safari</b>' : '→ <b>Chrome</b>') + '</li>'
+      +   '<li>거기서 다시 <b>설치</b>를 누르세요</li>'
+      + '</ol>'
+      + '<div class="row" style="gap:7px; margin-top:12px">'
+      +   '<button class="btn sm primary" id="insCopy">주소 복사해두기</button>'
+      + '</div>'
+      + '<p class="note" id="insMsg" style="margin:9px 0 0">주소를 복사해서 크롬 주소창에 붙여넣어도 됩니다.</p>');
+    const m = document.getElementById('insMsg');
+    document.getElementById('insCopy').onclick = async ()=>{
+      const ok = await copyText(SHARE_URL);
+      m.innerHTML = ok ? '<b>복사했습니다</b> — 크롬 주소창에 붙여넣으세요.'
+                       : '복사가 막혀 있습니다. 공유 버튼으로 주소를 확인하세요.';
+    };
     return;
   }
-  const ua = navigator.userAgent;
-  const iOS = /iPad|iPhone|iPod/.test(ua);
-  const safari = iOS && !/CriOS|FxiOS|EdgiOS/.test(ua);
-  if(iOS && !safari){
-    openSheet('사파리에서 열어주세요', `
-      아이폰은 <b>사파리에서만</b> 홈 화면에 추가할 수 있습니다.
-      <ol><li>주소를 복사해서 <b>사파리</b>로 여세요</li>
-      <li>아래 <b>공유 버튼</b>(↑ 네모)</li>
-      <li><b>홈 화면에 추가</b></li></ol>`);
-  } else if(iOS){
-    openSheet('홈 화면에 추가', `
-      <ol><li>화면 아래 <b>공유 버튼</b>(↑ 네모)을 누르세요</li>
-      <li>목록을 내려 <b>홈 화면에 추가</b></li>
-      <li>이름이 <b>헬린이 루틴북</b>으로 뜨면 <b>추가</b></li></ol>`);
-  } else {
-    openSheet('홈 화면에 추가', `
-      <ol><li>브라우저 오른쪽 위 <b>⋮ 메뉴</b></li>
-      <li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b></li></ol>
-      <p class="note" style="margin-top:8px">메뉴에 없으면 이미 설치돼 있거나, 이 브라우저가 지원하지 않는 경우입니다.</p>`);
+
+  /* 3) 아이폰 */
+  if(isIOS()){
+    const safari = !/CriOS|FxiOS|EdgiOS/.test(uaStr());
+    openSheet(safari ? '홈 화면에 추가' : '사파리에서 열어주세요', safari ? ''
+      + '<ol style="margin:0; padding-left:19px; line-height:1.85">'
+      +   '<li>화면 <b>아래 가운데 공유 버튼</b> (↑ 네모)</li>'
+      +   '<li>목록을 내려 <b>홈 화면에 추가</b></li>'
+      +   '<li>이름이 <b>헬린이 루틴북</b>으로 뜨면 <b>추가</b></li>'
+      + '</ol>'
+      + '<p class="note" style="margin:10px 0 0">아이폰은 <b>다운로드로는 설치되지 않습니다.</b> 반드시 위 순서를 쓰세요.</p>' : ''
+      + '<p style="margin:0 0 10px">아이폰은 <b>사파리에서만</b> 홈 화면에 추가할 수 있습니다.</p>'
+      + '<ol style="margin:0; padding-left:19px; line-height:1.85">'
+      +   '<li>주소를 복사해 <b>Safari</b>로 여세요</li>'
+      +   '<li>아래 <b>공유 버튼</b> (↑ 네모)</li>'
+      +   '<li><b>홈 화면에 추가</b></li>'
+      + '</ol>');
+    return;
   }
+
+  /* 4) 안드로이드 크롬 / PC */
+  openSheet('앱으로 설치하기', ''
+    + '<ol style="margin:0; padding-left:19px; line-height:1.85">'
+    +   '<li>' + (isAndroid() ? '화면 <b>오른쪽 위 ⋮ 메뉴</b>' : '주소창 오른쪽 <b>설치 아이콘</b>, 없으면 <b>⋮ 메뉴</b>') + '</li>'
+    +   '<li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b></li>'
+    +   '<li><b>설치</b>를 누르면 끝</li>'
+    + '</ol>'
+    + '<p class="note" style="margin:11px 0 0">'
+    +   '메뉴의 <b>↓ 다운로드는 다른 기능입니다.</b> 그걸 누르면 저장이 안 되니 '
+    +   '꼭 <b>앱 설치 / 홈 화면에 추가</b>를 고르세요.<br>'
+    +   '항목이 아예 없으면 <b>이미 설치돼 있는 상태</b>입니다.</p>');
 }
 
 (function initTopBar(){
   const s = document.getElementById('topShare'), i = document.getElementById('topInstall');
   if(s) s.onclick = doShare;
   if(i){
-    if(isStandalone()) i.hidden = true;     // 이미 앱으로 실행 중
+    if(isStandalone()) i.hidden = true;     /* 이미 앱으로 실행 중 */
     else i.onclick = doInstall;
   }
 })();
@@ -1161,11 +1256,10 @@ async function doInstall(){
   if(txt) txt.textContent = url.replace(/^https?:\/\//,'');
 
   async function copyLink(){
-    try{
-      await navigator.clipboard.writeText(url);
+    if(await copyText(url)){
       toast('링크를 복사했습니다 — 붙여넣으세요');
       return true;
-    }catch(e){
+    }else{
       try{
         const r = document.createRange(); r.selectNodeContents(txt);
         const s = getSelection(); s.removeAllRanges(); s.addRange(r);
@@ -1177,12 +1271,6 @@ async function doInstall(){
 
   copy.onclick = copyLink;
 
-  const canShare = typeof navigator.share === 'function';
-  const note = document.getElementById('shNote');
-  if(!canShare && note){
-    note.innerHTML = '이 브라우저는 공유창을 지원하지 않아 <b>공유하기를 누르면 링크가 복사</b>됩니다. '
-                   + 'PC 화면의 QR을 <b>폰 카메라로 찍어도</b> 바로 열립니다.';
-  }
   sh.onclick = doShare;
 })();
 
