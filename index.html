@@ -257,6 +257,23 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
     </div>
 
     <div class="card">
+      <div class="eyebrow">몸을 커 보이게 만드는 순서</div>
+      <p class="sub" style="margin:5px 0 0">178cm 72kg에서 <b>실제 체중을 많이 늘리지 않고도</b> 커 보이게 만드는 건 실루엣입니다. 순서대로 효과가 큽니다.</p>
+      <table class="tbl">
+        <tr><th style="width:20%">순위</th><th>부위</th><th>왜</th></tr>
+        <tr><td><b>1</b></td><td><b>어깨 옆</b> (측면 삼각근)</td><td>어깨 너비가 <b>가장 크게</b> 체감됩니다. 1cm 넓어지면 상의 핏이 달라져요. 매 운동일에 넣었습니다</td></tr>
+        <tr><td><b>2</b></td><td><b>등 넓이</b> (광배)</td><td>뒤에서 봤을 때 V자. 랫풀다운·풀오버가 담당</td></tr>
+        <tr><td><b>3</b></td><td><b>윗가슴</b></td><td>티셔츠 위쪽이 차 보입니다. 인클라인이 담당</td></tr>
+        <tr><td><b>4</b></td><td><b>팔</b> (삼두 &gt; 이두)</td><td>팔 굵기의 <b>2/3가 삼두</b>입니다. 반팔 입었을 때 차이가 큼</td></tr>
+        <tr><td><b>5</b></td><td>하체</td><td>보이진 않지만 <b>전체 근육량·대사</b>를 올려 나머지를 돕습니다</td></tr>
+      </table>
+      <div class="warnbox2" style="margin-top:11px">
+        <b>허리는 굵히면 안 됩니다.</b> 옆구리(복사근)를 무겁게 단련하면 허리가 두꺼워져서 어깨-허리 대비가 죽습니다.
+        그래서 사이드밴드·웨이티드 사이드벤드는 <b>일부러 뺐습니다.</b> 복부는 플랭크·케이블 크런치 정도면 충분해요.
+      </div>
+    </div>
+
+    <div class="card">
       <div class="eyebrow">인바디 · 2026.09.25</div>
       <div class="statgrid" style="margin-top:9px">
         <div class="stat"><div class="k">체중</div><div class="v num">72.4<span style="font-size:12px">kg</span></div><div class="d down">-0.9</div></div>
@@ -307,6 +324,19 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
       <div class="eyebrow">시작 전 5분</div>
       <p class="sub" style="margin:4px 0 0">실내자전거 또는 빠르게 걷기 <b>5분</b> → 집 루틴의 <b>벽 엔젤 10회</b> + <b>페이스풀 가볍게 15회</b>.
       어깨가 결리는 날은 이걸 빼먹지 마세요. 준비운동 없이 미는 운동부터 들어가면 어깨 앞쪽이 먼저 아파옵니다.</p>
+    </div>
+
+    <div class="card" style="padding:13px 14px">
+      <div class="eyebrow">세트 하는 법 — 이거만 지키면 됩니다</div>
+      <table class="tbl" style="margin-top:2px">
+        <tr><td style="width:30%"><b>① 워밍업 세트</b></td><td>그날 <b>첫 종목</b>만, 본세트 무게의 50%로 <b>10회 1세트</b>. 이건 세트 수에 안 칩니다</td></tr>
+        <tr><td><b>② 강도</b></td><td>매 세트 <b>2회쯤 더 할 수 있을 때</b> 멈춥니다. 끝까지 쥐어짜지 마세요 — 다음 세트가 망가집니다.<br>단 <b>마지막 세트</b>는 한계까지 가도 됩니다</td></tr>
+        <tr><td><b>③ 증량</b></td><td><b>목표 횟수를 3세트 전부 채운 다음 운동</b>에 올립니다.<br>상체 +2.5kg · 하체 +5kg. 못 채우면 같은 무게 한 번 더</td></tr>
+        <tr><td><b>④ 속도</b></td><td>올릴 때 1초, <b>내릴 때 2~3초.</b> 내리는 구간에서 근육이 더 자랍니다</td></tr>
+      </table>
+      <div class="okbox" style="margin-top:10px">
+        <b>초보 구간엔 이게 제일 빠릅니다.</b> 무게를 무리하게 올리는 것보다, 같은 무게로 <b>횟수를 먼저 채우고</b> 올리는 쪽이 부상 없이 꾸준히 늘어납니다.
+      </div>
     </div>
 
     <div class="exlist" id="exList"></div>
@@ -608,22 +638,22 @@ const HOME = [
 /* 루틴 */
 const PLANS = {
   '3day':{goal:3, days:[
-    {k:'A', n:'하체 + 등', d:'제일 안 하던 하체부터. 근육량을 올리려면 하체가 제일 효율이 큽니다.',
-     ex:['bike','legpress','legcurl','latpull','seatedrow','facepull','plank']},
-    {k:'B', n:'가슴 + 어깨 + 팔', d:'약점인 아랫가슴(딥스)과 이두를 여기서 채웁니다.',
-     ex:['bike','chestpress','inclinedb','dips','lateral','dbcurl','pushdown','facepull']},
-    {k:'C', n:'하체 + 등 + 코어', d:'엉덩이(힙쓰러스트)로 허리 부담을 줄입니다.',
-     ex:['bike','hacksquat','hipthrust','dbrow','pullover','hammer','cablecrunch','facepull']}
+    {k:'A', n:'하체 + 등 + 어깨', d:'하체와 등 넓이. 어깨 옆도 매일 넣습니다 — 어깨가 몸을 제일 커 보이게 합니다.',
+     ex:['bike','legpress','legcurl','latpull','seatedrow','lateral','facepull','plank']},
+    {k:'B', n:'가슴 + 어깨 + 삼두', d:'약점인 아랫가슴(딥스)과 팔 뒤(삼두)를 채웁니다.',
+     ex:['bike','chestpress','inclinedb','dips','shoulderpress','lateral','pushdown','facepull']},
+    {k:'C', n:'하체 + 등 + 팔', d:'엉덩이로 허리 부담을 줄이고, 팔을 몰아서 합니다.',
+     ex:['bike','hacksquat','hipthrust','dbrow','pullover','lateral','dbcurl','hammer','pushdown']}
   ]},
   '4day':{goal:4, days:[
-    {k:'1', n:'등 + 이두', d:'당기는 날. 라운드숄더 교정이 같이 됩니다.',
-     ex:['bike','latpull','seatedrow','dbrow','pullover','facepull','dbcurl','hammer']},
+    {k:'1', n:'등 + 이두 + 어깨', d:'당기는 날. 등 넓이 + 라운드숄더 교정이 같이 됩니다.',
+     ex:['bike','latpull','seatedrow','dbrow','pullover','facepull','lateral','dbcurl','hammer']},
     {k:'2', n:'하체', d:'허리에 안전한 머신 위주. 바벨 스쿼트·데드리프트는 넣지 않습니다.',
      ex:['bike','legpress','hacksquat','legcurl','legext','calf','plank']},
     {k:'3', n:'가슴 + 어깨 + 삼두', d:'미는 날. 아랫가슴(딥스)이 핵심.',
      ex:['bike','chestpress','inclinedb','dips','pecdeck','shoulderpress','lateral','pushdown']},
-    {k:'4', n:'약점 + 코어 + 교정', d:'부족한 것만 모았습니다. 가볍게 끝내는 날.',
-     ex:['bike','hipthrust','legext','dips','dbcurl','reardelt','facepull','cablecrunch']}
+    {k:'4', n:'어깨 + 팔 + 약점', d:'어깨와 팔을 몰아서. 여기가 실루엣을 만듭니다.',
+     ex:['bike','hipthrust','dips','lateral','reardelt','dbcurl','pushdown','cablecrunch','facepull']}
   ]}
 };
 
