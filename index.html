@@ -200,6 +200,13 @@ a.yt:hover svg path,a.yt:active svg path{fill:var(--accent)}
 .banner.bad{background:var(--danger-soft); border-color:var(--danger); color:var(--danger)}
 .banner .bd{font-size:13px; line-height:1.6; color:var(--ink2)}
 .banner.warn .bd,.banner.bad .bd{color:inherit; opacity:.92}
+.sharebox{display:flex; gap:14px; align-items:flex-start; margin-top:12px; flex-wrap:wrap}
+.sharebox img{border-radius:10px; border:1px solid var(--line); background:#fff; padding:6px; flex:0 0 auto}
+.shareside{flex:1; min-width:180px}
+.urltxt{
+  display:block; font:600 12.5px ui-monospace,'D2Coding',monospace; word-break:break-all;
+  background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; color:var(--ink2);
+}
 .hint{font-size:12.4px; padding:8px 10px; border-radius:8px; background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--accent-ink); margin-top:8px}
 .hint.warn{background:var(--warn-soft); border-color:transparent; color:var(--warn)}
 
@@ -477,6 +484,26 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
       <div class="row" style="margin-top:10px">
         <div class="pill">이번 달 음주 <b class="num" id="mDrink" style="margin-left:4px">0</b>일</div>
         <div class="pill">그중 운동함 <b class="num" id="mDrinkWk" style="margin-left:4px">0</b>일</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">링크 공유</div>
+      <p class="sub" style="margin:5px 0 0">폰으로 옮기거나 남한테 보낼 때 쓰세요. <b>받는 사람은 로그인 없이 바로 열립니다.</b></p>
+      <div class="sharebox">
+        <img id="qrImg" src="qr.png" alt="이 페이지 주소 QR 코드" width="132" height="132">
+        <div class="shareside">
+          <code class="urltxt" id="urlTxt">hochan3873.github.io/routine/</code>
+          <div class="row" style="gap:7px; margin-top:9px">
+            <button class="btn sm primary" id="shCopy">링크 복사</button>
+            <button class="btn sm" id="shShare" hidden>공유하기</button>
+          </div>
+          <p class="note" style="margin:8px 0 0">PC 화면의 QR을 <b>폰 카메라로 찍으면</b> 바로 열립니다.</p>
+        </div>
+      </div>
+      <div class="okbox" style="margin-top:11px">
+        <b>공유해도 인바디는 안 보입니다.</b> 비밀번호로 잠겨 있고 암호화까지 돼 있어서, 받는 사람 화면엔 🔒 표시만 뜹니다.
+        운동 기록도 <b>각자 자기 기기에 따로</b> 쌓입니다.
       </div>
     </div>
 
@@ -1011,6 +1038,33 @@ document.getElementById('plan4').onclick=()=>{ ST.plan='4day'; ST.cursor=0; save
 document.getElementById('calPrev').onclick=()=>{ calMonth.setMonth(calMonth.getMonth()-1); renderCal(); };
 document.getElementById('calNext').onclick=()=>{ calMonth.setMonth(calMonth.getMonth()+1); renderCal(); };
 document.getElementById('markDrink').onclick=()=>{ ST.drink[today()]=true; save(); toast('기록했습니다 — 내일은 무게 20% 낮추세요'); };
+
+/* ═══════════════ 링크 공유 ═══════════════ */
+(function initShare(){
+  const copy = document.getElementById('shCopy'), sh = document.getElementById('shShare');
+  if(!copy) return;
+  const url = location.href.split('#')[0].split('?')[0];
+  const txt = document.getElementById('urlTxt');
+  if(txt) txt.textContent = url.replace(/^https?:\/\//,'');
+
+  copy.onclick = async ()=>{
+    try{
+      await navigator.clipboard.writeText(url);
+      toast('링크를 복사했습니다');
+    }catch(e){
+      const r = document.createRange(); r.selectNodeContents(txt);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      toast('주소를 길게 눌러 복사하세요');
+    }
+  };
+  if(navigator.share){
+    sh.hidden = false;
+    sh.onclick = async ()=>{
+      try{ await navigator.share({title:'호찬 전용 루틴', text:'주 3~4회 헬스 루틴', url}); }
+      catch(e){}
+    };
+  }
+})();
 
 /* ═══════════════ 인바디 잠금 (AES-GCM) ═══════════════ */
 const LOCK = window.__INBODY__ || null;   // {s,i,c} base64 — 빌드 시 주입
