@@ -161,6 +161,18 @@ hr.rule{border:0; border-top:1px solid var(--line); margin:14px 0}
 .expand ol,.expand ul{margin:4px 0 0; padding-left:17px}
 .expand li{margin:2px 0}
 .tag{display:inline-block; padding:2px 7px; border-radius:6px; font-size:11.5px; background:var(--surface); border:1px solid var(--line); margin:3px 4px 0 0}
+a.yt{
+  display:inline-flex; align-items:center; gap:7px; text-decoration:none;
+  padding:9px 13px 9px 11px; border-radius:9px; font-size:13px; font-weight:600;
+  background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--accent-ink);
+  margin-top:5px; line-height:1.35;
+}
+a.yt svg{width:17px; height:17px; flex:0 0 auto}
+a.yt:hover,a.yt:active{background:var(--accent); border-color:var(--accent); color:#fff}
+a.yt:hover svg rect,a.yt:active svg rect{fill:#fff}
+a.yt:hover svg path,a.yt:active svg path{fill:var(--accent)}
+:root[data-theme="dark"] a.yt:hover,:root[data-theme="dark"] a.yt:active{color:#0E1A14}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) a.yt:hover,:root:not([data-theme="light"]) a.yt:active{color:#0E1A14}}
 .logrow{display:flex; gap:6px; align-items:center; margin-top:7px; flex-wrap:wrap}
 .logrow input{
   width:66px; padding:7px 9px; border-radius:8px; border:1px solid var(--line2);
@@ -457,6 +469,14 @@ function ico(p){
   return `<svg viewBox="0 0 40 42" aria-hidden="true">${g}</svg>`;
 }
 
+/* 유튜브 검색 버튼 */
+function ytBtn(q){
+  const url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  return `<a class="yt" href="${url}" target="_blank" rel="noopener noreferrer">`
+       + `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="4.5" width="21" height="15" rx="4.2" fill="currentColor"/><path d="M10 8.7l6 3.3-6 3.3z" fill="var(--accent-soft)"/></svg>`
+       + `<span>${q}</span></a>`;
+}
+
 /* ═══════════════ 운동 데이터 ═══════════════ */
 const EX = {
   chestpress:{n:'체스트 프레스 머신',ic:'horizPush',part:'가슴',sets:'3세트 × 10~12회',rest:'90초',
@@ -672,7 +692,7 @@ function renderToday(){
       <div class="expand" hidden>
         <div class="blk"><h5>하는 법</h5><ol>${h.how.map(x=>`<li>${x}</li>`).join('')}</ol></div>
         <div class="blk"><h5>포인트</h5><ul>${h.key.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-        <div class="blk"><h5>유튜브 검색어</h5><span class="tag">${h.yt}</span></div>
+        <div class="blk"><h5>영상으로 보기</h5>${ytBtn(h.yt)}</div>
       </div>`;
     const btn = el.querySelector('.head'), exp = el.querySelector('.expand');
     btn.querySelector('.chk').addEventListener('click', ev=>{
@@ -734,7 +754,7 @@ function exNode(e, id, log, logging){
       <div class="blk"><h5>하는 법</h5><ol>${e.how.map(x=>`<li>${x}</li>`).join('')}</ol></div>
       <div class="blk"><h5>핵심 포인트</h5><ul>${e.key.map(x=>`<li>${x}</li>`).join('')}</ul></div>
       <div class="blk"><h5>기구가 찼을 때 · 대체</h5>${e.alt.map(x=>`<span class="tag">${x}</span>`).join('')}</div>
-      <div class="blk"><h5>유튜브 검색어</h5><span class="tag">${e.yt}</span></div>
+      <div class="blk"><h5>영상으로 보기</h5>${ytBtn(e.yt)}</div>
       ${e.stop!=='—'?`<div class="blk"><h5>중단 기준</h5><div style="color:var(--danger); font-weight:600">${e.stop}</div></div>`:''}
       ${logging?`<div class="blk"><h5>무게 기록</h5>
         <div class="logrow"><input type="number" inputmode="decimal" id="w-${id}" placeholder="kg" value="${(log.w&&log.w[id])||''}"><label>kg 로 진행</label></div>
