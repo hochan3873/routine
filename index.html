@@ -20,6 +20,15 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
+<script>
+/* 화면 밝기 — 깜박임 없이 먼저 적용 */
+(function(){
+  try{
+    var t = localStorage.getItem('lg-theme') || 'light';
+    if(t !== 'auto') document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+})();
+</script>
 <style>
   :root{color-scheme:light; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
   html,body{margin:0}
@@ -36,7 +45,7 @@
 <script>window.__INBODY__={"s": "H2b0T8z2Dpfbl7iPIEMTJQ==", "i": "X1JfQVaTfW7f9QzZ", "c": "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"};</script>
 <script>
 /* ═══ 진단용: 무엇이 잘못됐는지 화면에 직접 보여준다 ═══ */
-window.__BUILD__ = '09/27 05:42';
+window.__BUILD__ = '09/27 06:17';
 (function(){
   var shown = 0;
   function banner(msg){
@@ -152,6 +161,8 @@ header.top{
 .setbtn:active{transform:scale(.95)}
 .setbtn.on{background:var(--accent); border-color:var(--accent); color:#fff}
 .setbtn.on .sn{color:rgba(255,255,255,.8)}
+.setbtn.locked{opacity:.4; cursor:not-allowed}
+.setbtn:disabled{pointer-events:auto}
 
 .logbox{padding:0 14px 14px; border-top:1px solid var(--line)}
 .logbox h5{font-size:11.5px; font-weight:700; color:var(--muted); letter-spacing:.3px; margin:13px 0 7px; text-transform:none}
@@ -340,6 +351,42 @@ nav.tabs button{min-height:48px}
 .h-lg{letter-spacing:-.6px}
 .pill{font-size:11.5px}
 
+/* 실제 운동 사진 — 시작/끝 두 장을 번갈아 */
+.photo{position:relative; border-radius:12px; overflow:hidden; background:#111; margin-bottom:11px; aspect-ratio:4/3}
+.photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.photo img.b{animation:swap 2.4s steps(1,end) infinite}
+@keyframes swap{0%,50%{opacity:0} 50.01%,100%{opacity:1}}
+.photo .plabel{
+  position:absolute; left:9px; bottom:9px; background:rgba(0,0,0,.6); color:#fff;
+  font-size:11px; font-weight:600; padding:4px 9px; border-radius:99px; backdrop-filter:blur(3px);
+}
+@media (prefers-reduced-motion:reduce){ .photo img.b{animation:none; opacity:0} }
+
+/* 내 몸 데이터 */
+.mchart{display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px}
+.mrow{border:1px solid var(--line); border-radius:12px; padding:12px 13px; background:var(--surface2)}
+.mrow .mh{display:flex; align-items:baseline; gap:8px}
+.mrow .mn{font-size:12px; font-weight:700; color:var(--ink2)}
+.mrow .mv{font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; margin-left:auto}
+.mrow .md{font-size:12px; font-weight:700}
+.md.up{color:var(--accent)} .md.down{color:var(--danger)} .md.flat{color:var(--muted)}
+.mrow svg{display:block; width:100%; height:56px; margin-top:7px; overflow:visible}
+.mrow .mx{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); margin-top:3px}
+.brow{display:flex; gap:10px; align-items:center; padding:11px 0; border-top:1px solid var(--line)}
+.brow .bd{font-size:12.5px; font-weight:700; width:52px; flex:0 0 auto}
+.brow .bv{flex:1; font-size:12.5px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.brow img{width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--line2); cursor:pointer}
+.brow .bx{width:32px; height:32px; flex:0 0 auto; border-radius:8px; border:1px solid var(--line2);
+  background:var(--surface); color:var(--danger); cursor:pointer; font-size:16px; line-height:1}
+.bform label{display:block; font-size:11.5px; font-weight:700; color:var(--muted); margin:10px 0 5px}
+.bform input[type=date], .bform input[type=number], .bform input[type=text]{
+  width:100%; height:44px; padding:0 12px; border-radius:10px; border:1px solid var(--line2);
+  background:var(--surface); color:var(--ink); font-size:15px; box-sizing:border-box;
+}
+.bgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.bpreview{width:100%; max-height:240px; object-fit:contain; border-radius:10px; margin-top:9px; background:#111}
+.emptyb{text-align:center; padding:22px 10px; color:var(--muted); font-size:12.5px; line-height:1.7}
+
 .sheet{position:fixed; inset:0; z-index:60; background:rgba(15,16,14,.55); display:grid; place-items:end center; padding:16px}
 .sheetbox{
   background:var(--surface); border:1px solid var(--line); border-radius:16px;
@@ -506,6 +553,8 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
   <header class="top">
     <div class="brand">술쟁이호찬의 <em>건강헬린이</em> 루틴북</div>
     <div class="topacts">
+  <button class="iconbtn" id="topTheme" title="화면 밝기" aria-label="화면 밝기 바꾸기"><svg viewBox="0 0 24 24" id="themeIcon"></svg><span id="themeTxt">밝게</span></button>
+
       <button class="iconbtn" id="topShare" title="공유하기" aria-label="공유하기" onclick="if(window.doShare){doShare()}else{window.__banner&amp;&amp;__banner('공유 기능이 로드되지 않았습니다')}">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="M8.3 10.8 15.7 6.8M8.3 13.2l7.4 4"/></svg>
         <span>공유</span>
@@ -754,6 +803,35 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
   <section class="page" id="p-log" hidden>
     <div class="card">
       <div class="row" style="justify-content:space-between">
+        <div class="eyebrow">내 몸 데이터</div>
+        <button class="btn sm primary" type="button" id="bodyAdd">＋ 인바디 입력</button>
+      </div>
+      <div id="bodyChart"></div>
+      <div id="bodyList"></div>
+      <details class="fold" style="margin-top:12px">
+        <summary>인바디 언제 · 어떻게 재나 <span>· 조건이 같아야 비교가 됩니다</span></summary>
+        <div class="foldbody">
+          <table class="tbl">
+            <tr><th style="width:30%">주기</th><td><b>2~4주에 한 번.</b> 그보다 자주 재면 진짜 변화가 아니라 그날그날 수분 차이만 보입니다.
+              근육은 한 달에 <b>0.3~0.7kg</b> 늘면 잘 되는 겁니다.</td></tr>
+            <tr><th>시간대</th><td><b>항상 같은 시간.</b> 아침 기상 직후가 제일 일정합니다.
+              오후에 재면 아침보다 체중이 1kg 넘게 높게 나옵니다.</td></tr>
+            <tr><th>공복</th><td><b>최소 3~4시간 금식.</b> 물도 재기 직전에 벌컥 마시지 마세요.</td></tr>
+            <tr><th>화장실</th><td><b>소변·대변을 본 뒤</b>에 재세요. 이것만으로 0.5kg 차이가 납니다.</td></tr>
+            <tr><th>운동 전</th><td>운동 <b>직후는 안 됩니다.</b> 땀으로 빠진 수분 때문에 체지방률이 실제보다 높게 나옵니다.</td></tr>
+            <tr><th>술 마신 날</th><td><b>다음 날은 재지 마세요.</b> 수분이 크게 흔들려서 근육량이 줄어 보입니다.</td></tr>
+            <tr><th>복장</th><td><b>맨발, 가벼운 옷.</b> 같은 기기에서 재야 비교가 됩니다.</td></tr>
+          </table>
+          <div class="okbox" style="margin-top:11px">
+            <b>숫자 하나에 일희일비하지 마세요.</b> 인바디는 오차가 있습니다.
+            중요한 건 <b>3~4회 이상 쌓였을 때의 방향</b>입니다. 그래서 그래프로 보는 겁니다.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
         <div class="eyebrow" id="calLabel">—</div>
         <div class="row" style="gap:6px">
           <button class="btn sm ghost" id="calPrev">←</button>
@@ -774,9 +852,10 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
       <div id="dayDetail"></div>
     </div>
 
-    <div class="card">
-      <div class="eyebrow">기록 관리</div>
-      <p class="sub" style="margin:5px 0 0">잘못 눌렀거나 처음부터 다시 하고 싶을 때 쓰세요.
+    <details class="fold">
+      <summary>기록 관리 <span>· 지우기 · 초기화</span></summary>
+      <div class="foldbody">
+      <p class="sub" style="margin:0">잘못 눌렀거나 처음부터 다시 하고 싶을 때 쓰세요.
       기록은 <b>이 기기에만</b> 저장되므로, 지우면 되돌릴 수 없습니다.</p>
       <div class="row" style="gap:7px; margin-top:11px; flex-wrap:wrap">
         <button class="btn sm ghost" type="button" id="rmToday">오늘 운동 기록 지우기</button>
@@ -787,7 +866,8 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
         <button class="dangerbtn" type="button" id="rmAll">전체 초기화</button>
       </div>
       <p class="note" id="rmMsg" style="margin:10px 0 0">지우기 전에 <b>아래 «다른 기기로 기록 옮기기»에서 코드를 복사</b>해두면 되살릴 수 있습니다.</p>
-    </div>
+      </div>
+    </details>
 
     <div class="card">
       <div class="eyebrow">술 마신 다음 날</div>
@@ -1057,6 +1137,16 @@ const MOVE = {
 function icoBig(pat){
   const mv = MOVE[pat] || '0,-8px';
   return `<div class="bigico" style="--mv:translate(${mv})">${ico(pat)}</div>`;
+}
+
+/* 사진이 있는 종목 — free-exercise-db (퍼블릭 도메인) */
+const PHOTO = new Set(["abduction", "adduction", "assistpullup", "backext", "barbellsquat", "bike", "cablecrunch", "cablecurl", "cablefly", "cablelateral", "calf", "chestpress", "dbcurl", "dbfly", "dbrow", "deadhanggym", "deadlift", "dips", "elliptical", "facepull", "hacksquat", "hammer", "hipthrust", "inclinedb", "lateral", "latpull", "legcurl", "legext", "legpress", "lunge", "machinerow", "machineshoulder", "ohtricep", "pecdeck", "plank", "platechest", "platepulldown", "platerow", "preacher", "pullover", "pushdown", "reardelt", "recovbike", "seatedcalf", "seatedrow", "shoulderpress", "shrug", "smithbench", "smithincline", "smithsquat", "spinbike", "stepup"]);
+function exPhoto(id, name){
+  if(!PHOTO.has(id)) return '';
+  return `<div class="photo">
+    <img src="img/${id}_0.jpg" alt="${name} 시작 자세" loading="lazy" decoding="async">
+    <img src="img/${id}_1.jpg" alt="${name} 끝 자세" loading="lazy" decoding="async" class="b">
+    <span class="plabel">동작 반복</span></div>`;
 }
 
 /* 유튜브 검색 버튼 */
@@ -1360,17 +1450,20 @@ const PLANS = {
 /* ═══════════════ 상태 ═══════════════ */
 const today = () => new Date().toLocaleDateString('sv-SE');
 let db = null;
-let ST = { plan:'3day', cursor:0, logs:{}, home:{}, drink:{}, food:{} };
+let ST = { plan:'3day', cursor:0, logs:{}, home:{}, drink:{}, food:{}, body:[] };
 let viewDay = 0, calMonth = new Date();
 
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),1600); }
 
 function lsGet(){ try{ const r=localStorage.getItem('levelgym'); return r?JSON.parse(r):null; }catch(e){ return null; } }
-function lsSet(){ try{ localStorage.setItem('levelgym', JSON.stringify(ST)); }catch(e){} }
+function lsSet(){
+  try{ localStorage.setItem('levelgym', JSON.stringify(ST)); }
+  catch(e){ if(window.__banner) __banner('저장공간이 가득 찼습니다. 기록 탭에서 오래된 인바디 사진을 지워주세요.'); throw e; }
+}
 
 let saveTimer=null;
 function save(){
-  lsSet();
+  try{ lsSet(); }catch(e){ return; }
   if(!db) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
@@ -1698,7 +1791,7 @@ function renderWarm(){
       label:'자전거·빠른 걷기 → 벽 엔젤 10회 → 페이스풀 15회',
       onEnd: ()=>{
         const l = logOf(today(), true);
-        if(!l.start) l.start = Date.now();
+        if(!sessRunning(l)){ l.start = Date.now(); delete l.end; }
         l.warm = true; save(); renderWarm();
         toast('준비 끝 — 첫 종목 가세요');
       } });
@@ -1707,23 +1800,58 @@ function renderWarm(){
   renderWarm();
 }catch(e){ console.error('[루틴북] initWarm 실패', e); if(window.__banner) __banner('initWarm: ' + (e && e.message)); } })();
 
+/* ═══════════════ 화면 밝기 ═══════════════ */
+const THEMES = [
+  { k:'light', t:'밝게', d:'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1' },
+  { k:'dark',  t:'어둡게', d:'M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z' },
+  { k:'auto',  t:'자동', d:'M12 3a9 9 0 1 0 0 18zM12 3a9 9 0 0 1 0 18' },
+];
+function themeNow(){ try{ return localStorage.getItem('lg-theme') || 'light'; }catch(e){ return 'light'; } }
+function applyTheme(k){
+  try{ localStorage.setItem('lg-theme', k); }catch(e){}
+  if(k === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', k);
+  const o = THEMES.find(x => x.k === k) || THEMES[0];
+  const ic = document.getElementById('themeIcon'), tx = document.getElementById('themeTxt');
+  if(ic) ic.innerHTML = `<path d="${o.d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if(tx) tx.textContent = o.t;
+}
+(function initTheme(){ try{
+  applyTheme(themeNow());
+  on('topTheme', ()=>{
+    const i = THEMES.findIndex(x => x.k === themeNow());
+    const nx = THEMES[(i + 1) % THEMES.length];
+    applyTheme(nx.k);
+    toast(nx.k === 'auto' ? '폰 설정을 따릅니다' : nx.t + ' 화면');
+  });
+}catch(e){ console.error('[루틴북] initTheme 실패', e); } })();
+
 /* ═══════════════ 운동 시작 / 종료 · 총 시간 ═══════════════ */
 let sessTick = null;
 
+const STALE = 2.5 * 60 * 60 * 1000;    /* 2시간 반 넘게 켜져 있으면 끄는 걸 잊은 것으로 본다 */
 function sessElapsed(l){
   if(!l || !l.start) return 0;
   return Math.max(0, Math.round(((l.end || Date.now()) - l.start) / 1000));
+}
+function sessRunning(l){
+  if(!l || !l.start || l.end) return false;
+  if(Date.now() - l.start > STALE){        /* 오래된 건 자동으로 정리 */
+    delete l.start; delete l.end; save();
+    return false;
+  }
+  return true;
 }
 function renderSess(){
   const box = document.getElementById('sessCard');
   if(!box) return;
   const l = logOf(today(), false);
-  const running = !!(l && l.start && !l.end);
+  const running = sessRunning(l);
   const el = sessElapsed(l);
 
   clearInterval(sessTick); sessTick = null;
 
-  if(!l || !l.start){
+  if(!l || !l.start || (!running && !l.end)){
     box.innerHTML = `
       <div class="sessrow">
         <div class="lb"><b>운동 시작</b><span>누르면 총 운동시간을 잽니다</span></div>
@@ -1737,7 +1865,8 @@ function renderSess(){
         <div class="lb"><b>운동 중</b><span>끝나면 종료를 눌러주세요</span></div>
         <button class="bigbtn stop" type="button" id="sessBtn">
           <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg><span>운동 종료</span></button>
-      </div>`;
+      </div>
+      <div class="row" style="margin-top:9px"><button class="btn sm ghost" type="button" id="sessReset">0:00 부터 다시</button></div>`;
     sessTick = setInterval(()=>{
       const e = document.getElementById('sessEl');
       if(!e){ clearInterval(sessTick); sessTick = null; return; }
@@ -1755,10 +1884,20 @@ function renderSess(){
 
   on('sessBtn', ()=>{
     const cur = logOf(today(), true);
-    if(!cur.start){ cur.start = Date.now(); delete cur.end; toast('운동 시작 — 시간을 재고 있습니다'); }
-    else if(!cur.end){ cur.end = Date.now(); stopRest(); toast(`오늘 운동 ${Math.round(sessElapsed(cur)/60)}분 걸렸습니다`); }
-    else { delete cur.end; toast('이어서 진행합니다'); }
+    if(sessRunning(cur)){
+      cur.end = Date.now(); stopRest();
+      toast(`오늘 운동 ${Math.round(sessElapsed(cur)/60)}분 걸렸습니다`);
+    } else {
+      cur.start = Date.now(); delete cur.end;   /* 언제나 0:00 부터 */
+      toast('운동 시작 — 0:00 부터 잽니다');
+    }
     save(); renderRoutine(); renderToday();
+  });
+  on('sessReset', ()=>{
+    const cur = logOf(today(), true);
+    cur.start = Date.now(); delete cur.end;
+    save(); renderRoutine();
+    toast('0:00 부터 다시 잽니다');
   });
 }
 
@@ -1823,7 +1962,7 @@ function exNode(e, id, log, logging, ovr, session){
         </div>
       </div>` : ''}
     <div class="expand" hidden>
-      <div class="blk"><h5>동작</h5>${icoBig(e.ic)}
+      <div class="blk"><h5>동작</h5>${exPhoto(id, e.n) || icoBig(e.ic)}
         <ol>${e.how.map(x => `<li>${x}</li>`).join('')}</ol></div>
       <div class="blk"><h5>핵심 포인트</h5><ul>${e.key.map(x => `<li>${x}</li>`).join('')}</ul></div>
       <div class="blk"><h5>기구가 찼을 때 · 대체 ${e.alt.length}가지</h5>${e.alt.map(x => `<span class="tag">${x}</span>`).join('')}
@@ -1877,13 +2016,17 @@ function exNode(e, id, log, logging, ovr, session){
       b.type = 'button';
       b.className = 'setbtn' + (r.sets[i] ? ' on' : '');
       const on_ = !!r.sets[i];
+      const doneN = doneSets(r);
+      const locked = !on_ && i > doneN;          /* 앞 세트를 안 했으면 못 누름 */
+      if(locked) b.classList.add('locked');
       const CHK = '<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor;vertical-align:-2px"><path d="m9.5 17.6-5-5 1.4-1.4 3.6 3.6 8.6-8.6L19.5 7.6z"/></svg>';
       b.innerHTML = isTimed(e, ovr)
         ? (on_ ? `<span class="sn">끝냄</span><span>${CHK}</span>`
                : `<span class="sn">시작</span><span>${reps || '타이머'}</span>`)
         : (on_ ? `<span class="sn">${i + 1}세트</span><span>${CHK}</span>`
                : `<span class="sn">${i + 1}세트</span><span>${reps || '하기'}</span>`);
-      b.setAttribute('aria-label', `${i + 1}세트 ${on_ ? '완료됨 — 누르면 취소' : '아직 — 끝내면 누르세요'}`);
+      b.setAttribute('aria-label', `${i + 1}세트 ${on_ ? '완료됨 — 누르면 취소' : (locked ? '앞 세트를 먼저 하세요' : '끝내면 누르세요')}`);
+      if(locked) b.title = '앞 세트를 먼저 끝내주세요';
       b.addEventListener('click', ev=>{
         ev.stopPropagation();
         const wasOn = !!r.sets[i];
@@ -1891,7 +2034,7 @@ function exNode(e, id, log, logging, ovr, session){
         /* 유산소처럼 시간으로 하는 종목 — 누르면 카운트다운이 돈다 */
         if(isTimed(e, ovr)){
           if(wasOn){ r.sets[i] = false; stopRest(); afterChange(session); return; }
-          if(!l.start) l.start = Date.now();
+          if(!sessRunning(l)){ l.start = Date.now(); delete l.end; }
           runTimer({
             sec: durSec(e, ovr), work:true, head:'진행 중',
             label: `${e.n} · ${ovr || e.sets}`,
@@ -1901,10 +2044,13 @@ function exNode(e, id, log, logging, ovr, session){
           return;
         }
 
+        const dn = doneSets(r);
+        if(!wasOn && i > dn){ toast(`${dn + 1}세트부터 순서대로 해주세요`); return; }
+        if(wasOn && i < dn - 1){ toast('마지막 세트부터 취소해 주세요'); return; }
         r.sets[i] = !wasOn;
         r.pass = false;
         if(!wasOn){
-          if(!l.start) l.start = Date.now();
+          if(!sessRunning(l)){ l.start = Date.now(); delete l.end; }
           const left = need - doneSets(r);
           const rf = restFor(e, r, sg);
           if(left > 0 && e.rest !== '—') startRest(rf.sec, `${e.n} · ${left}세트 남음${rf.up ? ' · 증량해서 +30초' : ''}`);
@@ -2335,13 +2481,176 @@ function confirmDel(btnId, question, run){
     toast(`${y}년 ${+m}월 기록을 지웠습니다`);
   }));
   on('rmAll', ()=> confirmDel('rmAll', '지금까지의 모든 기록을 지울까요?', ()=>{
-    ST.logs = {}; ST.home = {}; ST.drink = {}; ST.food = {};
+    ST.logs = {}; ST.home = {}; ST.drink = {}; ST.food = {}; ST.body = [];
     ST.cursor = 0; selDay = null;
     stopRest();
-    save(); renderCal(); renderToday(); renderRoutine(); renderFood();
+    save(); renderCal(); renderToday(); renderRoutine(); renderFood(); renderBody();
     toast('전체 초기화했습니다');
   }));
 }catch(e){ console.error('[루틴북] initWipe 실패', e); if(window.__banner) __banner('initWipe: ' + (e && e.message)); } })();
+
+/* ═══════════════ 내 몸 데이터 ═══════════════ */
+const METRICS = [
+  { k:'w', n:'체중',     u:'kg', good:'flat' },
+  { k:'m', n:'골격근량', u:'kg', good:'up'   },
+  { k:'f', n:'체지방률', u:'%',  good:'down' },
+];
+function bodyList(){ if(!Array.isArray(ST.body)) ST.body = []; return ST.body; }
+function bodySorted(){ return bodyList().slice().sort((a,b)=> a.d < b.d ? -1 : 1); }
+
+function spark(vals, color){
+  const n = vals.length;
+  if(n < 2) return '';
+  const W = 100, H = 56, pad = 4;
+  let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if(hi - lo < 0.4){ const mid = (hi + lo) / 2; lo = mid - 0.2; hi = mid + 0.2; }
+  const x = i => pad + i * (W - pad * 2) / (n - 1);
+  const y = v => H - pad - (v - lo) / (hi - lo) * (H - pad * 2);
+  const pts = vals.map((v, i)=> `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const dots = vals.map((v, i)=> `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="${color}"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="변화 그래프">
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>${dots}</svg>`;
+}
+
+function renderBody(){
+  const wrap = document.getElementById('bodyChart');
+  const list = document.getElementById('bodyList');
+  if(!wrap || !list) return;
+  const rows = bodySorted();
+
+  if(!rows.length){
+    wrap.innerHTML = `<div class="emptyb">아직 기록이 없습니다.<br>
+      <b>인바디 용지의 체중 · 골격근량 · 체지방률</b> 세 개만 넣으면<br>다음부터 변화가 그래프로 보입니다.</div>`;
+    list.innerHTML = '';
+    return;
+  }
+
+  const COLOR = { w:'var(--ink2)', m:'var(--accent)', f:'var(--fat)' };
+  wrap.innerHTML = '<div class="mchart">' + METRICS.map(mt=>{
+    const vals = rows.map(r=> r[mt.k]).filter(v=> typeof v === 'number' && !isNaN(v));
+    if(!vals.length) return '';
+    const last = vals[vals.length - 1], first = vals[0];
+    const diff = +(last - first).toFixed(1);
+    let cls = 'flat';
+    if(diff !== 0){
+      const rising = diff > 0;
+      cls = (mt.good === 'up' && rising) || (mt.good === 'down' && !rising) ? 'up'
+          : (mt.good === 'flat' ? 'flat' : 'down');
+    }
+    const sign = diff > 0 ? '+' : '';
+    return `<div class="mrow">
+      <div class="mh"><span class="mn">${mt.n}</span>
+        <span class="md ${cls}">${vals.length > 1 ? sign + diff + mt.u : '첫 기록'}</span>
+        <span class="mv">${last}<span style="font-size:12px; font-weight:600">${mt.u}</span></span></div>
+      ${spark(vals, COLOR[mt.k])}
+      <div class="mx"><span>${rows[0].d.slice(5).replace('-','/')}</span><span>${rows[rows.length-1].d.slice(5).replace('-','/')}</span></div>
+    </div>`;
+  }).join('') + '</div>';
+
+  list.innerHTML = rows.slice().reverse().map((r, i)=>{
+    const idx = rows.length - 1 - i;
+    return `<div class="brow">
+      <span class="bd">${r.d.slice(2).replace(/-/g,'.')}</span>
+      <span class="bv">${[r.w != null ? r.w + 'kg' : '', r.m != null ? '근육 ' + r.m : '', r.f != null ? '체지방 ' + r.f + '%' : '']
+        .filter(Boolean).join(' · ')}${r.memo ? ' · ' + r.memo : ''}</span>
+      ${r.img ? `<img src="${r.img}" alt="${r.d} 인바디 용지" data-view="${idx}">` : ''}
+      <button class="bx" type="button" data-bdel="${idx}" aria-label="삭제">×</button>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-bdel]').forEach(b=> b.onclick = ()=>{
+    const i = +b.dataset.bdel;
+    const target = rows[i];
+    ST.body = bodyList().filter(x=> !(x.d === target.d && x.w === target.w));
+    save(); renderBody(); toast('지웠습니다');
+  });
+  list.querySelectorAll('[data-view]').forEach(b=> b.onclick = ()=>{
+    openSheet(rows[+b.dataset.view].d + ' 인바디 용지',
+      `<img src="${rows[+b.dataset.view].img}" alt="인바디 용지" style="width:100%; border-radius:10px">`);
+  });
+}
+
+/* 사진을 작게 줄여서 저장 (폰 저장공간을 아끼려고) */
+function shrinkImage(file, maxPx, quality){
+  return new Promise((res, rej)=>{
+    const fr = new FileReader();
+    fr.onerror = ()=> rej(new Error('사진을 읽지 못했습니다'));
+    fr.onload = ()=>{
+      const im = new Image();
+      im.onerror = ()=> rej(new Error('사진 형식을 알 수 없습니다'));
+      im.onload = ()=>{
+        const s = Math.min(1, maxPx / Math.max(im.width, im.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', quality));
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+function openBodyForm(){
+  openSheet('인바디 입력', `
+    <div class="bform">
+      <label for="bfD">측정한 날</label>
+      <input type="date" id="bfD" value="${today()}">
+      <div class="bgrid">
+        <div><label for="bfW">체중 (kg)</label><input type="number" id="bfW" inputmode="decimal" step="0.1" placeholder="예: 70.0"></div>
+        <div><label for="bfM">골격근량 (kg)</label><input type="number" id="bfM" inputmode="decimal" step="0.1" placeholder="예: 30.0"></div>
+      </div>
+      <div class="bgrid">
+        <div><label for="bfF">체지방률 (%)</label><input type="number" id="bfF" inputmode="decimal" step="0.1" placeholder="예: 20.0"></div>
+        <div><label for="bfN">메모</label><input type="text" id="bfN" placeholder="아침 공복"></div>
+      </div>
+      <label for="bfP">인바디 용지 사진 (선택)</label>
+      <input type="file" id="bfP" accept="image/*" style="font-size:13px">
+      <img id="bfPrev" class="bpreview" hidden alt="고른 사진 미리보기">
+      <p class="note" id="bfMsg" style="margin:9px 0 0">사진은 <b>이 기기에만</b> 저장됩니다. 용량을 아끼려고 작게 줄여서 보관합니다.</p>
+      <button class="bigbtn" type="button" id="bfSave" style="width:100%; justify-content:center; margin-top:12px">저장</button>
+    </div>`);
+
+  let photo = null;
+  const msg = document.getElementById('bfMsg');
+  const fp = document.getElementById('bfP');
+  if(fp) fp.addEventListener('change', async ()=>{
+    const f = fp.files && fp.files[0];
+    if(!f) return;
+    try{
+      photo = await shrinkImage(f, 900, 0.62);
+      const pv = document.getElementById('bfPrev');
+      pv.src = photo; pv.hidden = false;
+      msg.innerHTML = `사진 준비됨 (약 ${Math.round(photo.length / 1400)}KB). <b>이 기기에만</b> 저장됩니다.`;
+    }catch(e){ msg.textContent = e.message; }
+  });
+
+  on('bfSave', ()=>{
+    const num = id => { const v = parseFloat((document.getElementById(id) || {}).value); return isNaN(v) ? null : v; };
+    const d = (document.getElementById('bfD') || {}).value || today();
+    const rec = { d, w:num('bfW'), m:num('bfM'), f:num('bfF'),
+                  memo:((document.getElementById('bfN') || {}).value || '').trim() };
+    if(rec.w == null && rec.m == null && rec.f == null && !photo){ toast('숫자를 하나라도 넣어주세요'); return; }
+    if(photo) rec.img = photo;
+    const arr = bodyList().filter(x=> x.d !== d);
+    arr.push(rec);
+    ST.body = arr;
+    try{
+      save();
+    }catch(e){
+      toast('저장공간이 부족합니다 — 사진 없이 저장하세요');
+      return;
+    }
+    renderBody();
+    const sh = document.getElementById('sheet'); if(sh) sh.hidden = true;
+    toast('기록했습니다');
+  });
+}
+
+(function initBody(){ try{
+  on('bodyAdd', openBodyForm);
+}catch(e){ console.error('[루틴북] initBody 실패', e); if(window.__banner) __banner('initBody: ' + (e && e.message)); } })();
 
 function renderCal(){
   const y=calMonth.getFullYear(), m=calMonth.getMonth();
@@ -2377,7 +2686,7 @@ function go(t){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===t));
   if(t==='routine') renderRoutine();
   if(t==='dict') renderDict();
-  if(t==='log') renderCal();
+  if(t==='log'){ renderCal(); renderBody(); }
   if(t==='food') renderFood();
   if(t==='today') renderToday();
   window.scrollTo(0,0);
