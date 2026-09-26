@@ -495,10 +495,10 @@ table.tbl td.n{font-family:'Archivo'; font-weight:700; font-variant-numeric:tabu
         <div class="shareside">
           <code class="urltxt" id="urlTxt">hochan3873.github.io/routine/</code>
           <div class="row" style="gap:7px; margin-top:9px">
-            <button class="btn sm primary" id="shCopy">링크 복사</button>
-            <button class="btn sm" id="shShare" hidden>공유하기</button>
+            <button class="btn sm primary" id="shShare">공유하기</button>
+            <button class="btn sm" id="shCopy">링크 복사</button>
           </div>
-          <p class="note" style="margin:8px 0 0">PC 화면의 QR을 <b>폰 카메라로 찍으면</b> 바로 열립니다.</p>
+          <p class="note" id="shNote" style="margin:8px 0 0">PC 화면의 QR을 <b>폰 카메라로 찍으면</b> 바로 열립니다.</p>
         </div>
       </div>
       <div class="okbox" style="margin-top:11px">
@@ -1047,23 +1047,40 @@ document.getElementById('markDrink').onclick=()=>{ ST.drink[today()]=true; save(
   const txt = document.getElementById('urlTxt');
   if(txt) txt.textContent = url.replace(/^https?:\/\//,'');
 
-  copy.onclick = async ()=>{
+  async function copyLink(){
     try{
       await navigator.clipboard.writeText(url);
-      toast('링크를 복사했습니다');
+      toast('링크를 복사했습니다 — 붙여넣으세요');
+      return true;
     }catch(e){
-      const r = document.createRange(); r.selectNodeContents(txt);
-      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-      toast('주소를 길게 눌러 복사하세요');
+      try{
+        const r = document.createRange(); r.selectNodeContents(txt);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      }catch(e2){}
+      toast('아래 주소를 길게 눌러 복사하세요');
+      return false;
     }
-  };
-  if(navigator.share){
-    sh.hidden = false;
-    sh.onclick = async ()=>{
-      try{ await navigator.share({title:'호찬 전용 루틴', text:'주 3~4회 헬스 루틴', url}); }
-      catch(e){}
-    };
   }
+
+  copy.onclick = copyLink;
+
+  const canShare = typeof navigator.share === 'function';
+  const note = document.getElementById('shNote');
+  if(!canShare && note){
+    note.innerHTML = '이 브라우저는 공유창을 지원하지 않아 <b>공유하기를 누르면 링크가 복사</b>됩니다. '
+                   + 'PC 화면의 QR을 <b>폰 카메라로 찍어도</b> 바로 열립니다.';
+  }
+  sh.onclick = async ()=>{
+    if(canShare){
+      try{
+        await navigator.share({title:'호찬 전용 루틴', text:'주 3~4회 헬스 루틴 · 동작 설명 · 기록', url});
+        return;
+      }catch(e){
+        if(e && e.name === 'AbortError') return;   // 사용자가 공유창을 닫음
+      }
+    }
+    copyLink();
+  };
 })();
 
 /* ═══════════════ 인바디 잠금 (AES-GCM) ═══════════════ */
