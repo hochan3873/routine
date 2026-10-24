@@ -483,6 +483,17 @@ a.yt svg path{fill:#fff}
 .rest-next{flex:1; min-width:0; font-size:13px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .rest-row button{height:38px; padding:0 11px; border-radius:10px; background:rgba(127,127,127,.25); color:inherit; font-size:13.5px; font-weight:700; white-space:nowrap}
 .rest-row button.strong{background:rgba(255,255,255,.92); color:#191F28}
+.rest-row button.rest-next{background:none; height:auto; padding:0; font-size:13px; font-weight:500; text-align:left}
+.rest-row button.rest-next.away{font-weight:700; text-decoration:underline; text-underline-offset:3px}
+.restbtn{display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--accent-ink); font-weight:600; font-variant-numeric:tabular-nums; padding:4px 0}
+.donecta{margin-top:12px}
+.donecta[disabled]{opacity:.55}
+.memo{margin-top:12px; width:100%; text-align:left; padding:11px 14px; border-radius:14px; background:var(--warn-soft); font-size:14px; line-height:1.55; white-space:pre-wrap; word-break:break-all}
+.memo b{color:var(--warn); margin-right:6px}
+textarea.memoin{width:100%; min-height:110px; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); font-size:16px; line-height:1.5; resize:vertical}
+.rgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.rgrid button{height:50px; border-radius:12px; background:var(--fill); font-size:16px; font-weight:700; font-variant-numeric:tabular-nums}
+.rgrid button.on{background:var(--accent); color:var(--on-accent)}
 
 .minibar{
   position:fixed; left:12px; right:12px; bottom:calc(72px + env(safe-area-inset-bottom,0px)); z-index:35;
@@ -866,7 +877,7 @@ window.__BUILD__ = '10/24 09:40';
       <div class="rest-top"><span class="rest-lb" id="restLb">휴식</span><span class="rest-t" id="restT">0:00</span></div>
       <div class="rest-bar"><i id="restBar"></i></div>
       <div class="rest-row">
-        <span class="rest-next" id="restNext"></span>
+        <button type="button" class="rest-next" id="restNext"></button>
         <button type="button" id="restMinus">−15초</button>
         <button type="button" id="restPlus">+15초</button>
         <button type="button" id="restSkip" class="strong">건너뛰기</button>
@@ -1592,7 +1603,7 @@ function toSec(txt){
        cur = 진행 중인 운동 (앱을 닫아도 그대로 남는다) */
 const LSKEY = 'levelgym';
 function freshState(){
-  return { v:2, plan:'3day', cursor:0, recov:'', cfg:{ unit:'kg', sound:true }, units:{},
+  return { v:2, plan:'3day', cursor:0, recov:'', cfg:{ unit:'kg', sound:true }, units:{}, rest:{}, notes:{},
            logs:{}, cur:null, home:{}, drink:{}, food:{}, body:[] };
 }
 let ST = freshState();
@@ -1653,7 +1664,7 @@ function load(){
   const base = freshState();
   ST = Object.assign(base, s);
   ST.cfg = Object.assign(freshState().cfg, s.cfg || {});
-  ['units', 'logs', 'home', 'drink', 'food'].forEach(k => { if(!ST[k] || typeof ST[k] !== 'object' || Array.isArray(ST[k])) ST[k] = {}; });
+  ['units', 'rest', 'notes', 'logs', 'home', 'drink', 'food'].forEach(k => { if(!ST[k] || typeof ST[k] !== 'object' || Array.isArray(ST[k])) ST[k] = {}; });
   if(!Array.isArray(ST.body)) ST.body = [];
   if(!PLANS[ST.plan]) ST.plan = '3day';
   if(ST.cur && (!Array.isArray(ST.cur.order) || !ST.cur.ex)) ST.cur = null;
@@ -1683,6 +1694,11 @@ function stepOf(id, e, u){
   return lower ? 5 : (small ? 1 : 2.5);
 }
 function restBase(e){ return e.rest === '—' ? 0 : (toSec(e.rest) || 60); }
+/* 운동별로 직접 정한 휴식 시간이 있으면 그걸 쓴다 (없으면 기본 + 증량하는 날 30초) */
+function restFor(id, kind){
+  if(ST.rest[id] != null) return ST.rest[id];
+  return restBase(EX[id]) + (kind === 'up' ? 30 : 0);
+}
 
 function sortedKeys(){ return Object.keys(ST.logs).sort(); }
 function doneSets(r){ return (r && Array.isArray(r.sets)) ? r.sets.filter(s => s.d) : []; }
@@ -2139,7 +2155,7 @@ function exView(W, id){
     </div></div>`;
   } else {
     const nw = t.hold;
-    const restS = restBase(e) + (p.kind === 'up' ? 30 : 0);
+    const restS = restFor(id, p.kind), restMine = ST.rest[id] != null;
     const rows = r.sets.map((s, ix) => {
       const ls = last && last.sets[ix];
       const pv = ls ? setTxt(ls, t, last.u, true) : '—';
@@ -2154,15 +2170,16 @@ function exView(W, id){
     }).join('');
     const tgt = ovr && !/50%/.test(ovr) ? ovr : `${t.n}세트 × ${t.side ? '한쪽 ' : ''}${t.lo}${t.hi !== t.lo ? '~' + t.hi : ''}${t.unit}`;
     sets = `<div class="sets">
-      <div class="sets-hd"><div><b>${esc(tgt)}</b><span>${restS ? `세트 사이 휴식 ${fmtT(restS)}${p.kind === 'up' ? ' (증량 +30초)' : ''}` : '휴식 없음'}</span></div>
+      <div class="sets-hd"><div><b>${esc(tgt)}</b><button class="restbtn" type="button" data-act="resttime" aria-label="휴식 시간 바꾸기">⏱ ${restS ? `휴식 ${fmtT(restS)}${p.kind === 'up' && !restMine ? ' (증량 +30초)' : ''}` : '휴식 없음'} · 바꾸기</button></div>
         ${nw ? '' : `<div class="seg mini" data-act="unit" role="group" aria-label="무게 단위"><button type="button" data-u="kg" aria-pressed="${u === 'kg'}">kg</button><button type="button" data-u="lb" aria-pressed="${u === 'lb'}">lb</button></div>`}</div>
       <div class="sgrid shead${nw ? ' nw' : ''}"><span>세트</span><span>지난번</span>${nw ? '' : `<span>${assist ? '보조 ' + u : u}</span>`}<span>${t.unit === '초' ? '초' : '횟수'}</span><span>완료</span></div>
       ${rows}
+      ${doneCta(W, id, t, nw)}
       <div class="sets-ft">
         <button class="btn sm" type="button" data-act="addset">＋ 세트 추가</button>
         ${r.sets.length > 1 ? `<button class="btn sm ghost" type="button" data-act="delset">− 마지막 세트</button>` : ''}
       </div>
-      <p class="tip">${nw ? '✓를 누르면 <b>버티기 타이머</b>가 돌고, 끝나면 자동으로 체크돼요.' : '위 세트와 같으면 <b>✓만 누르세요</b> — 숫자가 자동으로 따라옵니다. 회색 숫자는 추천값이에요.'} 지난번 칸을 누르면 그 기록을 그대로 가져와요.</p>
+      <p class="tip">${nw ? '버티기를 시작하면 타이머가 돌고, 끝나면 자동으로 체크돼요.' : '숫자가 맞으면 <b>세트 완료</b>만 누르세요 — 아래 세트도 같은 숫자로 따라옵니다. 회색 숫자는 추천값이에요.'} 지난번 칸을 누르면 그 기록을 그대로 가져와요.</p>
     </div>`;
   }
 
@@ -2174,10 +2191,47 @@ function exView(W, id){
         <button class="chipbtn" type="button" data-act="how">하는 법</button>
         <button class="chipbtn" type="button" data-act="swap">기구 찼어요 · 바꾸기</button>
         <button class="chipbtn" type="button" data-act="hist">내 기록</button>
+        <button class="chipbtn" type="button" data-act="memo">${ST.notes[id] ? '메모 고치기' : '＋ 메모'}</button>
       </div>
     </div>
+    ${ST.notes[id] ? `<button class="memo" type="button" data-act="memo"><b>메모</b>${esc(ST.notes[id])}</button>` : ''}
     ${coach}${sets}
     <button class="linkbtn" type="button" data-act="pass">${r.pass ? '건너뛰기 취소' : '오늘은 이 운동 건너뛰기'}</button>`;
+}
+
+/* 큰 "N세트 완료" 버튼 — 다음에 할 세트 하나만 가리킨다 */
+function doneCta(W, id, t, nw){
+  const r = W.ex[id], ix = r.sets.findIndex(s => !s.d);
+  if(ix < 0) return '';
+  const T = W.timer, holding = T && T.act && T.act.a === 'hold' && T.act.id === id;
+  if(holding) return `<button class="cta donecta" type="button" disabled>${T.act.ix + 1}세트 버티는 중…</button>`;
+  return `<button class="cta donecta" type="button" data-act="next" data-ix="${ix}">${nw ? `▶ ${ix + 1}세트 버티기 시작` : `✓ ${ix + 1}세트 완료`}</button>`;
+}
+function openRestPick(id){
+  const e = EX[id], cur = ST.rest[id], def = restBase(e);
+  const opts = [0, 30, 45, 60, 90, 120, 150, 180, 240];
+  let h = `<p class="note">${esc(e.n)} 세트 사이에 쉴 시간이에요. 다음 운동 때도 이 시간으로 기억해요.</p><div class="rgrid" style="margin-top:14px">`;
+  h += opts.map(s => `<button type="button" data-s="${s}" class="${cur === s ? 'on' : ''}">${s ? fmtT(s) : '안 쉼'}</button>`).join('');
+  h += `</div><button class="linkbtn" type="button" id="rpDef">${cur == null ? '✓ ' : ''}기본값 쓰기 (${def ? fmtT(def) : '안 쉼'})</button>`;
+  openSheet('휴식 시간', h);
+  $('sheetBody').querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+    ST.rest[id] = +b.dataset.s; save(); closeSheet(); renderPlayer();
+    toast(`${e.n}: 휴식 ${+b.dataset.s ? fmtT(+b.dataset.s) : '없음'}`);
+  });
+  $('rpDef').onclick = () => { delete ST.rest[id]; save(); closeSheet(); renderPlayer(); };
+}
+function openMemo(id){
+  const e = EX[id];
+  openSheet(`${e.n} 메모`, `<p class="note">의자 높이, 핀 번호, 손 위치처럼 다음에도 기억할 것을 적어두세요. 이 운동을 할 때마다 보여요.</p>
+    <textarea class="memoin" id="memoIn" maxlength="300" placeholder="예) 의자 4번 · 손잡이 가운데">${esc(ST.notes[id] || '')}</textarea>
+    <button class="cta" type="button" id="memoOk" style="margin-top:12px">저장</button>
+    ${ST.notes[id] ? '<button class="linkbtn danger" type="button" id="memoDel">메모 지우기</button>' : ''}`);
+  $('memoOk').onclick = () => {
+    const v = $('memoIn').value.trim();
+    if(v) ST.notes[id] = v; else delete ST.notes[id];
+    save(); closeSheet(); renderPlayer();
+  };
+  if($('memoDel')) $('memoDel').onclick = () => { delete ST.notes[id]; save(); closeSheet(); renderPlayer(); };
 }
 
 /* 운동 화면 — 버튼 하나하나 대신 화면 전체에서 한 번에 받는다 */
@@ -2186,12 +2240,15 @@ $('plBody').addEventListener('click', ev => {
   const W = ST.cur, act = b.dataset.act, id = W.order[W.i], ix = +b.dataset.ix;
   if(act === 'unit'){ const ub = ev.target.closest('[data-u]'); if(ub) setUnit(id, ub.dataset.u); return; }
   if(act === 'warmgo'){
-    startTimer({ kind:'work', sec:300, label:'자전거 → 벽 엔젤 → 페이스 풀', act:{ a:'warm' } });
+    if(busyWork('warm')) return;
+    startTimer({ kind:'work', sec:300, label:'자전거 → 벽 엔젤 → 페이스 풀', act:{ a:'warm' }, ex:'warm' });
     toast('5분 뒤에 알려드릴게요'); renderPlayer(); return;
   }
   if(act === 'warmskip'){ finishWarm(); return; }
   if(!id) return;
-  if(act === 'check') toggleSet(id, ix);
+  if(act === 'check' || act === 'next') toggleSet(id, ix);
+  else if(act === 'resttime') openRestPick(id);
+  else if(act === 'memo') openMemo(id);
   else if(act === 'prev') copyPrev(id, ix);
   else if(act === 'addset'){ const r = W.ex[id], l = r.sets[r.sets.length - 1] || {}; r.sets.push({ w:l.w == null ? null : l.w, r:l.r == null ? null : l.r, d:false }); commit(); }
   else if(act === 'delset'){
@@ -2237,9 +2294,10 @@ function toggleSet(id, ix){
   const e = EX[id], t = target(e, W.ovr[id]);
   if(s.d){
     s.d = false;
-    if(W.timer && W.timer.kind === 'rest') W.timer = null;
+    if(W.timer && W.timer.kind === 'rest' && W.timer.ex === id) W.timer = null;
     commit(); return;
   }
+  if(busyWork(id)) return;
   readRow(id, ix);
   if(t.cardio){ if(!(s.r > 0)) s.r = t.lo; completeSet(id, ix); return; }
   const firstOpen = r.sets.findIndex(x => !x.d);
@@ -2247,24 +2305,37 @@ function toggleSet(id, ix){
   if(!t.hold && s.w == null){ toast('무게를 먼저 넣어주세요'); focusInput(ix, 'w'); return; }
   if(!(s.r > 0)){ toast(t.hold ? '버틸 시간(초)을 넣어주세요' : '횟수를 넣어주세요'); focusInput(ix, 'r'); return; }
   if(t.hold){
-    startTimer({ kind:'work', sec:s.r, label:`${e.n} · ${ix + 1}세트`, act:{ a:'hold', id, ix } });
+    startTimer({ kind:'work', sec:s.r, label:`${e.n} · ${ix + 1}세트`, act:{ a:'hold', id, ix }, ex:id });
     toast('버티세요! 끝나면 자동으로 체크됩니다');
     touch(); save(); renderPlayer(); return;
   }
   completeSet(id, ix);
 }
+/* 타이머는 한 번에 하나. 버티기·유산소 타이머가 도는 중이면 다른 걸 새로 시작하지 않는다.
+   준비운동 타이머는 첫 세트를 시작하면 끝난 걸로 친다. */
+function busyWork(target){
+  const W = ST.cur, T = W && W.timer;
+  if(!T || T.kind !== 'work' || T.fired) return false;
+  if(T.act && T.act.a === 'warm'){
+    if(target === 'warm') return false;
+    W.warm = true; W.timer = null; return false;
+  }
+  const nm = T.act && EX[T.act.id] ? EX[T.act.id].n : '다른';
+  toast(`${nm} 타이머가 도는 중이에요 — 아래 «지금 끝»을 누른 뒤에 하세요`);
+  return true;
+}
 function completeSet(id, ix){
   const W = ST.cur, r = W.ex[id], s = r.sets[ix], e = EX[id], t = target(e, W.ovr[id]);
-  s.d = true; r.pass = false;
+  s.d = true; r.pass = false; W.warm = true;
   /* "같음" — 아래 세트 중 손대지 않은 칸은 방금 세트 숫자를 따라간다 */
   for(let j = ix + 1; j < r.sets.length; j++){ const n = r.sets[j]; if(!n.d && !n.m){ n.w = s.w; n.r = s.r; } }
   touch(); vibrate(40);
   const p = plan4(id, e, W.ovr[id], W.drink, W.date);
-  const restS = restBase(e) + (p.kind === 'up' ? 30 : 0);
+  const restS = restFor(id, p.kind);
   const left = r.sets.filter(x => !x.d);
   if(left.length){
     const nx = left[0];
-    if(restS) startTimer({ kind:'rest', sec:restS, label:`다음 ${r.sets.indexOf(nx) + 1}세트 · ${setTxt(nx, t, r.u)}` });
+    if(restS) startTimer({ kind:'rest', sec:restS, label:`${e.n} ${r.sets.indexOf(nx) + 1}세트 · ${setTxt(nx, t, r.u)}`, ex:id });
     else W.timer = null;
     save(); renderPlayer(); return;
   }
@@ -2276,12 +2347,15 @@ function completeSet(id, ix){
     toast('오늘 운동 전부 끝! 아래 «운동 끝내기»를 눌러 저장하세요');
     return;
   }
-  if(restS) startTimer({ kind:'rest', sec:restS, label:`다음 운동 · ${EX[W.order[nxt]].n}` });
+  const nid = W.order[nxt];
+  if(restS) startTimer({ kind:'rest', sec:restS, label:`다음 운동 · ${EX[nid].n}`, ex:nid });
   else W.timer = null;
   save(); renderPlayer();
+  /* 보고 있던 운동을 끝냈을 때만 화면을 넘긴다. 다른 운동을 보는 중이면 그대로 둔다 */
+  if(W.order[W.i] !== id){ toast(`${e.n} 끝 ✓`); return; }
   toast(`${e.n} 끝 ✓ 다음 운동으로 넘어갑니다`);
   clearTimeout(advT);
-  advT = setTimeout(() => { if(ST.cur === W && exDone(W, W.order[W.i])) goEx(nxt); }, 1100);
+  advT = setTimeout(() => { if(ST.cur === W && W.order[W.i] === id) goEx(nxt); }, 1100);
 }
 function copyPrev(id, ix){
   const W = ST.cur, r = W.ex[id], s = r.sets[ix];
@@ -2302,7 +2376,7 @@ function passEx(id){
   const W = ST.cur, r = W.ex[id];
   r.pass = !r.pass;
   if(r.pass){
-    if(W.timer && W.timer.kind === 'work') W.timer = null;
+    if(W.timer && W.timer.ex === id) W.timer = null;
     const nx = nextUndone(W, W.i);
     commit(); toast('건너뛴 걸로 기록했어요');
     if(nx != null) setTimeout(() => goEx(nx), 500);
@@ -2318,9 +2392,10 @@ function finishWarm(){
 function startCardio(id){
   const W = ST.cur, r = W.ex[id], e = EX[id], t = target(e, W.ovr[id]);
   readRow(id, 0);
+  if(busyWork(id)) return;
   const m = r.sets[0].r > 0 ? r.sets[0].r : t.lo;
   r.sets[0].r = m;
-  startTimer({ kind:'work', sec:m * 60, label:`${e.n} · ${m}분`, act:{ a:'cardio', id } });
+  startTimer({ kind:'work', sec:m * 60, label:`${e.n} · ${m}분`, act:{ a:'cardio', id }, ex:id });
   toast(`${m}분 뒤에 알려드릴게요`);
   commit();
 }
@@ -2328,17 +2403,21 @@ function startCardio(id){
 /* ── 타이머: 끝나는 시각을 저장하므로 앱을 닫았다 열어도 이어진다 ── */
 function startTimer(o){
   const W = ST.cur; if(!W) return;
-  W.timer = { kind:o.kind, end:Date.now() + o.sec * 1000, total:o.sec, label:o.label || '', act:o.act || null, fired:false };
+  W.timer = { kind:o.kind, end:Date.now() + o.sec * 1000, total:o.sec, label:o.label || '', act:o.act || null, ex:o.ex || null, fired:false };
   save(); tick();
 }
+/* 버티기·유산소·준비운동 타이머가 끝났을 때. 화면은 절대 마음대로 옮기지 않는다 */
 function runAct(a){
   const W = ST.cur; if(!W) return;
   W.timer = null;
   if(!a){ save(); renderPlayer(); return; }
-  if(a.a === 'warm'){ finishWarm(); toast('준비운동 끝 — 첫 운동 시작!'); return; }
+  if(a.a === 'warm'){
+    if(W.i === -1){ finishWarm(); toast('준비운동 끝 — 첫 운동 시작!'); }
+    else { W.warm = true; save(); renderPlayer(); toast('준비운동 타이머 끝'); }
+    return;
+  }
   const j = W.order.indexOf(a.id);
   if(j < 0){ save(); renderPlayer(); return; }
-  if(W.i !== j) W.i = j;
   if(a.a === 'hold'){ const s = W.ex[a.id].sets[a.ix]; if(s && !s.d) completeSet(a.id, a.ix); else { save(); renderPlayer(); } return; }
   if(a.a === 'cardio'){ if(!W.ex[a.id].sets[0].d) completeSet(a.id, 0); else { save(); renderPlayer(); } }
 }
@@ -2356,7 +2435,9 @@ function tick(){
     if(T.kind === 'work'){ runAct(T.act); return; }
     toast('휴식 끝 — 다음 세트 가세요!');
   }
-  if(left < 0 && T.kind === 'rest' && (-left) % 15 === 0 && lastOverBeep !== left){
+  /* 휴식 초과: 1분까지만 15초마다 알리고, 5분 지나면 알아서 닫는다 */
+  if(left < -300 && T.kind === 'rest'){ W.timer = null; save(); box.hidden = true; updateMini(); return; }
+  if(left < 0 && left >= -60 && T.kind === 'rest' && (-left) % 15 === 0 && lastOverBeep !== left){
     lastOverBeep = left; if(ST.cfg.sound) beep(1); vibrate(120);
   }
   box.hidden = false;
@@ -2365,10 +2446,21 @@ function tick(){
   $('restLb').textContent = left > 0 ? what : (T.kind === 'rest' ? '휴식 끝 — 시작하세요' : '끝!');
   $('restT').textContent = fmtT(left);
   $('restBar').style.width = Math.max(0, Math.min(100, left / T.total * 100)) + '%';
-  $('restNext').textContent = T.label;
+  /* 지금 보는 운동과 다른 운동의 타이머면, 눌러서 그 운동으로 돌아갈 수 있게 */
+  const here = W.i === -1 ? 'warm' : W.order[W.i];
+  const away = !!T.ex && T.ex !== here && (T.ex === 'warm' || W.order.includes(T.ex));
+  const nb = $('restNext');
+  nb.textContent = (away ? '↩ ' : '') + T.label;
+  nb.classList.toggle('away', away);
+  nb.disabled = !away;
   $('restSkip').textContent = T.kind === 'work' ? '지금 끝' : (left < 0 ? '닫기' : '건너뛰기');
   updateMini();
 }
+on('restNext', () => {
+  const W = ST.cur, T = W && W.timer; if(!T || !T.ex) return;
+  if(T.ex === 'warm') goEx(-1);
+  else { const j = W.order.indexOf(T.ex); if(j >= 0) goEx(j); }
+});
 on('restMinus', () => { const T = ST.cur && ST.cur.timer; if(!T) return; T.end -= 15000; save(); tick(); });
 on('restPlus', () => {
   const T = ST.cur && ST.cur.timer; if(!T) return;
