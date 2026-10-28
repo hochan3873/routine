@@ -823,6 +823,8 @@ window.__BUILD__ = '10/24 09:40';
         <div class="seg mini" id="cfgTheme"><button data-v="light">밝게</button><button data-v="dark">어둡게</button><button data-v="auto">자동</button></div></div>
       <div class="setline"><span class="sl">휴식 끝 알림음<small>진동은 항상 울려요 (지원하는 폰만)</small></span>
         <button class="switch" id="cfgSound" role="switch" aria-checked="true" aria-label="휴식 끝 알림음"></button></div>
+      <div class="setline"><span class="sl">잠금화면 알림<small>다른 앱을 보거나 화면이 꺼져 있어도 휴식 끝을 띄워요</small></span>
+        <button class="switch" id="cfgNotif" role="switch" aria-checked="false" aria-label="잠금화면 알림"></button></div>
     </div>
 
     <div class="gtitle">내 루틴 안내</div>
@@ -1592,6 +1594,81 @@ function beep(n){
     }
   }catch(e){}
 }
+/* 타이머 소리는 끝나는 시각에 미리 예약해 둔다.
+   화면을 끄거나 다른 앱으로 나가면 0.5초마다 도는 tick이 멈추기 때문에, 소리 장치에 직접 걸어두는 것 */
+let alarmNodes = [], alarmKey = '';
+function cancelAlarm(){
+  alarmNodes.forEach(o => { try{ o.stop(); o.disconnect(); }catch(e){} });
+  alarmNodes = []; alarmKey = '';
+}
+function scheduleAlarm(T){
+  const key = T && ST.cfg.sound ? T.end + '|' + T.kind : '';
+  if(key === alarmKey) return;
+  cancelAlarm();
+  if(!key) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    /* 멈춰 있는 동안엔 소리 시계도 멈춰서 예약이 밀린다 — 깨운 뒤 다음 tick에 예약 */
+    if(audioCtx.state !== 'running'){ audioCtx.resume(); return; }
+    const base = audioCtx.currentTime + (T.end - Date.now()) / 1000;
+    /* 끝날 때 3번, 휴식이면 그 뒤 1분까지 15초마다 1번 */
+    const hits = [[0, 3]];
+    if(T.kind === 'rest') [15, 30, 45, 60].forEach(s => hits.push([s, 1]));
+    hits.forEach(([off, n]) => {
+      for(let i = 0; i < n; i++){
+        const t0 = base + off + i * 0.25;
+        if(t0 < audioCtx.currentTime) continue;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value = 880; o.type = 'sine';
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+        o.start(t0); o.stop(t0 + 0.2);
+        alarmNodes.push(o);
+      }
+    });
+    alarmKey = key;
+  }catch(e){}
+}
+
+/* 잠금화면·다른 앱 위 알림 (안드로이드 크롬, PC 크롬). 서비스 워커로 띄운다 */
+let swReg = null;
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
+  navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
+}
+function notifOk(){ return 'Notification' in window && Notification.permission === 'granted' && ST.cfg.notif !== false; }
+function askNotif(){
+  if(!('Notification' in window) || Notification.permission !== 'default' || ST.cfg.notifAsked) return;
+  ST.cfg.notifAsked = true; save();
+  try{
+    const p = Notification.requestPermission();
+    if(p && p.then) p.then(afterAsk);
+  }catch(e){}
+}
+function afterAsk(r){
+  if(r === 'granted') toast('이제 다른 앱을 보고 있어도 휴식 끝을 알려드려요');
+  if(curTab === 'more') renderMore();
+}
+async function swRegNow(){
+  return swReg || (navigator.serviceWorker ? await navigator.serviceWorker.getRegistration() : null);
+}
+async function notify(title, body){
+  if(!notifOk()) return;
+  const opt = { body, tag:'routine-timer', renotify:true, icon:'icon-192.png', badge:'icon-192.png', vibrate:[200, 100, 200, 100, 400] };
+  try{
+    const r = await swRegNow();
+    if(r) await r.showNotification(title, opt);
+    else new Notification(title, opt);
+  }catch(e){}
+}
+async function clearNotif(){
+  try{
+    const r = await swRegNow();
+    if(r) (await r.getNotifications({ tag:'routine-timer' })).forEach(n => n.close());
+  }catch(e){}
+}
+
 /* 폰은 소리를 내려면 사용자가 한 번 눌러줘야 한다 — 첫 터치 때 깨워둔다 */
 document.addEventListener('pointerdown', function wakeAudio(){
   try{ audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); }catch(e){}
@@ -2100,7 +2177,12 @@ async function keepAwake(yes){
     else if(wakeLock){ await wakeLock.release(); wakeLock = null; }
   }catch(e){}
 }
-document.addEventListener('visibilitychange', () => { if(!document.hidden){ if(playerOpen) keepAwake(true); tick(); } });
+/* 앱으로 돌아오면: 소리 장치가 멈춰 있었을 수 있으니 소리를 다시 예약하고, 떠 있는 알림은 치운다 */
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  if(playerOpen) keepAwake(true);
+  cancelAlarm(); clearNotif(); tick();
+});
 
 function goEx(j){
   const W = ST.cur; if(!W) return;
@@ -2430,6 +2512,7 @@ function startCardio(id){
 function startTimer(o){
   const W = ST.cur; if(!W) return;
   W.timer = { kind:o.kind, end:Date.now() + o.sec * 1000, total:o.sec, label:o.label || '', act:o.act || null, ex:o.ex || null, fired:false };
+  askNotif();
   save(); tick();
 }
 /* 버티기·유산소·준비운동 타이머가 끝났을 때. 화면은 절대 마음대로 옮기지 않는다 */
@@ -2452,19 +2535,25 @@ function tick(){
   const W = ST.cur;
   if(W && playerOpen) $('plTime').textContent = fmtT((Date.now() - W.start) / 1000);
   const T = W && W.timer, box = $('rest');
+  scheduleAlarm(T);
   if(!T){ box.hidden = true; updateMini(); return; }
   const left = Math.ceil((T.end - Date.now()) / 1000);
   if(left <= 0 && !T.fired){
     T.fired = true; save();
-    if(ST.cfg.sound) beep(3);
+    /* 소리는 예약해 둔 게 울린다. 예약이 안 됐을 때(소리 장치 오류)만 여기서 울린다 */
+    if(ST.cfg.sound && !alarmKey) beep(3);
     vibrate([200, 100, 200]);
+    if(document.hidden && left > -120){
+      const what = T.act ? ({ warm:'준비운동 끝', hold:'버티기 끝', cardio:'유산소 끝' }[T.act.a] || '타이머 끝') : '휴식 끝 — 다음 세트!';
+      notify(what, T.label || '루틴북으로 돌아오세요');
+    }
     if(T.kind === 'work'){ runAct(T.act); return; }
     toast('휴식 끝 — 다음 세트 가세요!');
   }
   /* 휴식 초과: 1분까지만 15초마다 알리고, 5분 지나면 알아서 닫는다 */
   if(left < -300 && T.kind === 'rest'){ W.timer = null; save(); box.hidden = true; updateMini(); return; }
   if(left < 0 && left >= -60 && T.kind === 'rest' && (-left) % 15 === 0 && lastOverBeep !== left){
-    lastOverBeep = left; if(ST.cfg.sound) beep(1); vibrate(120);
+    lastOverBeep = left; if(ST.cfg.sound && !alarmKey) beep(1); vibrate(120);
   }
   box.hidden = false;
   box.className = 'rest' + (T.kind === 'work' ? ' work' : '') + (left < 0 ? ' over' : '');
@@ -3313,6 +3402,7 @@ function renderMore(){
   const set = (gid, v) => $(gid).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v));
   set('cfgUnit', ST.cfg.unit); set('cfgPlan', ST.plan); set('cfgTheme', themeNow());
   $('cfgSound').setAttribute('aria-checked', !!ST.cfg.sound);
+  $('cfgNotif').setAttribute('aria-checked', notifOk());
   $('verTxt').textContent = '버전 ' + (window.__BUILD__ || '?') + ' · 기록은 이 기기에만 저장됩니다';
 }
 $('cfgUnit').querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -3325,7 +3415,18 @@ $('cfgPlan').querySelectorAll('button').forEach(b => b.onclick = () => {
   toast(b.dataset.v === '3day' ? '주 3회 루틴으로 바꿨습니다' : '주 4회 루틴으로 바꿨습니다');
 });
 $('cfgTheme').querySelectorAll('button').forEach(b => b.onclick = () => { applyTheme(b.dataset.v); renderMore(); });
-on('cfgSound', () => { ST.cfg.sound = !ST.cfg.sound; save(); renderMore(); if(ST.cfg.sound) beep(1); });
+on('cfgSound', () => { ST.cfg.sound = !ST.cfg.sound; save(); renderMore(); tick(); if(ST.cfg.sound) beep(1); });
+on('cfgNotif', () => {
+  if(!('Notification' in window)){
+    toast(/iPhone|iPad/.test(navigator.userAgent) ? '아이폰은 홈 화면에 추가한 앱에서만 알림을 켤 수 있어요' : '이 브라우저는 알림을 지원하지 않아요');
+    return;
+  }
+  const p = Notification.permission;
+  if(p === 'denied'){ toast('알림이 막혀 있어요 — 폰 설정 › 앱 › 크롬(또는 루틴북) › 알림에서 허용해 주세요'); return; }
+  if(p === 'default'){ ST.cfg.notifAsked = false; ST.cfg.notif = true; askNotif(); return; }
+  ST.cfg.notif = ST.cfg.notif === false; save(); renderMore();
+  if(ST.cfg.notif) notify('알림 테스트', '휴식이 끝나면 이렇게 알려드려요');
+});
 $('infoList').querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => openSheet(b.dataset.t, $(b.dataset.tpl).innerHTML));
 on('mShare', () => doShare());
 on('mInstall', () => doInstall());
